@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/AOP/SDDS/!svn/ver/3754/trunk/zlib
+END
+inffast.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inffast.h
+END
+Makefile.OAG
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/AOP/SDDS/!svn/ver/3754/trunk/zlib/Makefile.OAG
+END
+inffixed.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inffixed.h
+END
+deflate.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/deflate.c
+END
+zlib.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/zlib.h
+END
+gzclose.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/gzclose.c
+END
+gzlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/gzlib.c
+END
+zutil.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/zutil.c
+END
+Makefile.Host
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/AOP/SDDS/!svn/ver/2174/trunk/zlib/Makefile.Host
+END
+deflate.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/deflate.h
+END
+gzread.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/gzread.c
+END
+crc32.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/crc32.c
+END
+zutil.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/zutil.h
+END
+inftrees.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inftrees.c
+END
+crc32.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/crc32.h
+END
+inflate.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inflate.c
+END
+trees.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/trees.c
+END
+uncompr.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/uncompr.c
+END
+inftrees.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inftrees.h
+END
+zconf.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3619/trunk/zlib/zconf.h
+END
+inflate.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inflate.h
+END
+trees.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/trees.h
+END
+gzguts.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/gzguts.h
+END
+Makefile.Vx
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/AOP/SDDS/!svn/ver/2279/trunk/zlib/Makefile.Vx
+END
+inffast.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/inffast.c
+END
+gzwrite.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/gzwrite.c
+END
+compress.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/compress.c
+END
+adler32.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/adler32.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/AOP/SDDS/!svn/ver/2147/trunk/zlib/Makefile
+END
+infback.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/AOP/SDDS/!svn/ver/3618/trunk/zlib/infback.c
+END

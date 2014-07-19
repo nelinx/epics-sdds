@@ -1,0 +1,72 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+SHARED_LIBRARIES = NO
+
+ifdef WIN32
+FORCE_ZLIB_BUILD=YES
+LIB_SUFFIX=.lib
+endif
+
+ifeq ($(EPICS_HOST_ARCH),linux-ppc64-xl)
+FORCE_ZLIB_BUILD=YES
+endif
+ifeq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+FORCE_ZLIB_BUILD=YES
+endif
+ifeq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+FORCE_ZLIB_BUILD=YES
+endif
+
+ifeq ($(EPICS_HOST_ARCH),solaris-x86_64)
+FORCE_ZLIB_BUILD=YES
+endif
+
+ifeq ($(FORCE_ZLIB_BUILD),YES)
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+LIBRARY = z
+else
+LIBRARY_HOST = z
+endif
+endif
+
+#USR_CFLAGS += -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN
+USR_CFLAGS += -D_LARGEFILE64_SOURCE=1
+
+LIBRARY_vxWorks = z
+
+LIBSRCS = adler32.c \
+        compress.c \
+        crc32.c \
+        gzclose.c \
+        gzlib.c \
+        gzread.c \
+        gzwrite.c \
+        uncompr.c \
+        deflate.c \
+        trees.c \
+        zutil.c \
+        inflate.c \
+        infback.c \
+        inftrees.c \
+        inffast.c
+
+INC = zlib.h zconf.h
+

@@ -1,0 +1,235 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+endif
+
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+PROD = sddscontour sddscongen sddshist2d sddsimageconvert
+else
+PROD_HOST = sddscontour sddscongen sddshist2d sddsimageconvert
+endif
+
+USR_CFLAGS = 	-I../../sddsplots -I../../../include -I../../../lzma \
+		-DzLib
+
+GDFOUND = 1
+GD = $(words $(notdir $(wildcard \
+/usr/lib/libgd.a \
+/usr/lib/libgd.so \
+/usr/lib64/libgd.a \
+/usr/lib64/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.a \
+/usr/lib/x86_64-linux-gnu/libgd.so \
+/usr/lib/x86_64-linux-gnu/libgd.a \
+/lib/i386-linux-gnu/libgd.so \
+/lib/i386-linux-gnu/libgd.a \
+/lib/x86_64-linux-gnu/libgd.so \
+/lib/x86_64-linux-gnu/libgd.a \
+/lib/libgd.a \
+/lib/libgd.so \
+/lib64/libgd.a \
+/lib64/libgd.so \
+/sw/lib/libgd.a \
+/sw/lib/libgd.dylib \
+/opt/local/lib/libgd.a \
+/opt/local/lib/libgd.dylib \
+/opt/sfw/lib/libgd.a \
+/opt/sfw/lib/libgd.so \
+/opt/local/lib/libgd.so )))
+GDINC = $(words $(notdir $(wildcard \
+/usr/include/gd.h \
+/include/gd.h \
+/sw/include/gd.h \
+/opt/sfw/include/gd.h \
+/opt/local/include/gd.h )))
+
+ifeq ($(GD), 0)
+GDFOUND = 0
+else
+ifeq ($(GDINC), 0)
+GDFOUND = 0
+endif
+endif
+
+ifneq ($(GDFOUND), 0)
+ifeq ($(STATIC_BUILD),YES)
+ifneq ($(words $(notdir $(wildcard /usr/lib/libgd.a \
+                                   /usr/lib64/libgd.a \
+                                   /usr/lib/i386-linux-gnu/libgd.a \
+                                   /usr/lib/x86_64-linux-gnu/libgd.a \
+                                   /lib/libgd.a \
+                                   /lib64/libgd.a \
+                                   /sw/lib/libgd.a \
+                                   /opt/sfw/lib/libgd.a \
+                                   /opt/local/lib/libgd.a))), 0)
+SYS_PROD_LIBS += gd png
+else
+OP_SYS_LDLIBS += -lgd -lpng
+endif
+else
+SYS_PROD_LIBS += gd png
+endif
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_INCLUDES += -I/opt/sfw/include -I/opt/local/include
+OP_SYS_LDFLAGS += -L/opt/sfw/lib -L/opt/local/lib -R/opt/sfw/lib -R/opt/local/lib
+endif
+endif
+
+ifeq ($(GDFOUND), 0)
+sddscontour_LIBS += mdbplt gd png
+sddscongen_LIBS += mdbplt gd png
+sddshist2d_LIBS += mdbplt gd png
+sddsimageconvert_LIBS += gd png
+PROD_LIBS_WIN32 += gd png
+gd_DIR = $(INSTALL_LIB)
+png_DIR = $(INSTALL_LIB)
+endif
+
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../../gsl))
+ifeq ($(GSL), 1)
+GSLLIB = gsl gslcblas
+SYS_GSLLIB = 
+GSL_DIR = $(INSTALL_LIB)
+GSLCBLAS_DIR = $(INSTALL_LIB)
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+GSLLIB = 
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+GSLLIB = 
+SYS_GSLLIB = 
+endif
+endif
+
+PROD_LIBS_DEFAULT = mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib lzma
+PROD_LIBS_Darwin = mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib lzma
+PROD_LIBS_Linux = mdbcommon matlib fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib lzma
+ifeq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+PROD_LIBS_WIN32 += mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib z lzma
+else
+ifeq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+PROD_LIBS_WIN32 += mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib z lzma
+else
+PROD_LIBS_WIN32 += mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib fdlibm z lzma
+endif
+endif
+PROD_LIBS_BORLANDC = mdbcommon fftpack SDDS1c rpnlib $(GSLLIB) mdbmth mdblib fdlibm z lzma
+
+SYS_PROD_LIBS_DEFAULT = z
+SYS_PROD_LIBS_Darwin = z
+SYS_PROD_LIBS_Linux = z
+SYS_PROD_LIBS_solaris = -nil-
+SYS_PROD_LIBS_sun4 = z suntool sunwindow pixrect
+SYS_PROD_LIBS_WIN32 = advapi32
+SYS_PROD_LIBS_BORLANDC = -nil-
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_LDLIBS += -lz
+endif
+
+ifeq ($(OS_CLASS),Linux)
+ifeq ($(STATIC_BUILD),YES)
+#OP_SYS_LDLIBS += -Wl,-Bdynamic -lX11 -lXpm -Wl,-Bstatic
+else
+PROD_LIBS_Linux += X11 Xpm
+endif
+ifndef BGL
+ifneq ($(words $(notdir $(wildcard /usr/include/fontconfig/fontconfig.h))), 0)
+ifeq ($(STATIC_BUILD),YES)
+
+ifneq ($(words $(notdir $(wildcard \
+/usr/lib/libfontconfig.a \
+/usr/lib64/libfontconfig.a \
+/usr/lib/i386-linux-gnu/libfontconfig.a \
+/usr/lib/x86_64-linux-gnu/libfontconfig.a))), 0)
+
+SYS_PROD_LIBS_Linux += fontconfig
+else
+#OP_SYS_LDLIBS += -Wl,-Bdynamic -lfontconfig -Wl,-Bstatic
+endif #($(words $(notdir $(wildcard /usr/lib/libfontconfig.a))), 0)
+else
+SYS_PROD_LIBS_Linux += fontconfig
+endif #($(STATIC_BUILD),YES)
+endif #($(words $(notdir $(wildcard /usr/include/fontconfig/fontconfig.h))), 0)
+endif #BGL
+endif
+
+
+
+sddscontour_LIBS += mdbplt
+sddscongen_LIBS += mdbplt
+sddshist2d_LIBS += mdbplt
+sddscontour_SYS_LIBS += $(SYS_GSLLIB)
+sddscongen_SYS_LIBS += $(SYS_GSLLIB)
+sddshist2d_SYS_LIBS += $(SYS_GSLLIB)
+sddsimageconvert_SYS_LIBS += $(SYS_GSLLIB)
+
+
+
+fdlibm_DIR = $(INSTALL_LIB)
+SDDS1c_DIR = $(INSTALL_LIB)
+mdbplt_DIR = $(INSTALL_LIB)
+rpnlib_DIR = $(INSTALL_LIB)
+fftpack_DIR = $(INSTALL_LIB)
+mdbmth_DIR = $(INSTALL_LIB)
+mdblib_DIR = $(INSTALL_LIB)
+matlib_DIR = $(INSTALL_LIB)
+mdbcommon_DIR = $(INSTALL_LIB)
+z_DIR = $(INSTALL_LIB)
+lzma_DIR = $(INSTALL_LIB)
+Xpm_DIR = $(X11_LIB)
+X11_DIR = $(X11_LIB)
+sddscontour_CFLAGS = -DRPN_SUPPORT
+
+sddscontour_SRCS += 	sddscontour.c draw_contours.c shade_grid.c \
+				plot_contours.c fft_interp.c

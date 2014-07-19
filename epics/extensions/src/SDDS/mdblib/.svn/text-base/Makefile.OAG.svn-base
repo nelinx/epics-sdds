@@ -1,0 +1,102 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+ifeq ($(GNU),YES)
+CONFORM_CFLAGS_ANSI =
+endif
+endif
+
+USR_CFLAGS += 	-I../../include -DEXPORT_MDBLIB
+unpack_CFLAGS += -DzLib
+sortfunctions_CFLAGS += -I../../lzma
+substituteTagValue_CFLAGS += -I../../lzma
+
+LIBRARY = mdblib
+
+LIBSRCS = array.c \
+        backspace.c \
+        binary.c \
+        binsert.c \
+        bomb.c \
+        buffer.c \
+        clean_filename.c \
+        compress.c \
+        cp_str.c \
+        data_scan.c \
+        delete_bnd.c \
+        delete_chars.c \
+        edit_string.c \
+        exp_notation.c \
+        fexists.c \
+        filestat.c \
+        fill_array.c \
+        fopen_e.c \
+        get_token_tq.c \
+        headers.c \
+        insert.c \
+        interpret_escapes.c \
+        is_blank.c \
+        linked_list.c \
+        match_string.c \
+        non_dominated_sort.c \
+        pad_with_spaces.c \
+        query.c \
+        rcdelete.c \
+        replace_chars.c \
+        replace_string.c \
+        replacefile.c \
+        report_stats.c \
+        rootname.c \
+        scanitemlist.c \
+        searchPath.c \
+        sortfunctions.c \
+        str_copy.c \
+        str_in.c \
+        str_inn.c \
+        str_tolower.c \
+        str_toupper.c \
+        strslide.c \
+        substituteTagValue.c \
+        time.c \
+        timeconvert.c \
+        timer.c \
+        tmpname.c \
+        trim_spaces.c \
+        unpack.c \
+        wild_list.c \
+        wild_match.c
+
+ifeq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+WIN32 = 1
+endif
+ifeq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+WIN32 = 1
+endif
+
+ifdef WIN32
+LIB_LIBS += z
+z_DIR = $(INSTALL_LIB)
+else
+LIB_SYS_LIBS_DEFAULT = z
+endif

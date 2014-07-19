@@ -1,0 +1,297 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+SHRLIB_LDFLAGS = -G -h libmdbplt.so -z nodefs
+endif
+
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+PROD_DEFAULT = sddsplot mpl_x11 mpl_x11g mpl_x11c
+PROD_WIN32 = sddsplot
+LIBRARY = mdbplt
+else
+
+FDLIBM = fdlibm
+ifeq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+WIN32 = 1
+FDLIBM =
+endif
+ifeq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+WIN32 = 1
+FDLIBM =
+endif
+
+ifdef WIN32
+PROD_HOST = sddsplot
+else
+PROD_HOST = sddsplot mpl_x11 mpl_x11g mpl_x11c
+endif
+LIBRARY_HOST = mdbplt
+endif
+
+SHARED_LIBRARIES = NO
+ifdef WIN32
+LIB_SUFFIX=.lib
+endif
+
+USR_CFLAGS += 	-I../../../include -I../../../lzma -I$(X11_INC) -DzLib
+
+ifeq ($(OS_CLASS),solaris)
+ifneq ($(words $(notdir $(wildcard $(X11_LIB)/libz.a $(X11_LIB)/libz.so))), 0)
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+OPT_LDFLAGS += -L/usr/lib
+else
+STATIC_LDFLAGS += -L/usr/lib
+endif
+endif
+endif
+
+
+GDFOUND = 1
+GD = $(words $(notdir $(wildcard \
+/usr/lib/libgd.a \
+/usr/lib/libgd.so \
+/usr/lib64/libgd.a \
+/usr/lib64/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.a \
+/usr/lib/x86_64-linux-gnu/libgd.so \
+/usr/lib/x86_64-linux-gnu/libgd.a \
+/lib/i386-linux-gnu/libgd.so \
+/lib/i386-linux-gnu/libgd.a \
+/lib/x86_64-linux-gnu/libgd.so \
+/lib/x86_64-linux-gnu/libgd.a \
+/lib/libgd.a \
+/lib/libgd.so \
+/lib64/libgd.a \
+/lib64/libgd.so \
+/sw/lib/libgd.a \
+/sw/lib/libgd.dylib \
+/opt/local/lib/libgd.a \
+/opt/local/lib/libgd.dylib \
+/opt/sfw/lib/libgd.a \
+/opt/sfw/lib/libgd.so \
+/opt/local/lib/libgd.so )))
+GDINC = $(words $(notdir $(wildcard \
+/usr/include/gd.h \
+/include/gd.h \
+/sw/include/gd.h \
+/opt/sfw/include/gd.h \
+/opt/local/include/gd.h )))
+
+ifeq ($(GD), 0)
+GDFOUND = 0
+else
+ifeq ($(GDINC), 0)
+GDFOUND = 0
+endif
+endif
+
+ifeq ($(OS_CLASS),Linux)
+ifeq ($(STATIC_BUILD),YES)
+#These static libraries usually are only available if you rebuild the
+#SRPMs and modify the .spec files to enable the static libraries.
+ifeq ($(words $(notdir $(wildcard $(X11_LIB)/libX11.a))), 0)
+STATIC_BUILD=NO
+endif
+endif
+endif
+
+ifeq ($(OS_CLASS),Linux)
+ifeq ($(STATIC_BUILD),YES)
+#RHEL4 will not build libXaw.a so make an exception for this library
+ifeq ($(words $(notdir $(wildcard $(X11_LIB)/libXaw.a))), 0)
+#RHEL4_STATIC_BUILD=YES
+STATIC_BUILD=NO
+endif
+endif
+endif
+
+
+
+ifneq ($(GDFOUND), 0)
+ifeq ($(STATIC_BUILD),YES)
+ifneq ($(words $(notdir $(wildcard /usr/lib/libgd.a \
+                                   /usr/lib64/libgd.a \
+                                   /usr/lib/i386-linux-gnu/libgd.a \
+                                   /usr/lib/x86_64-linux-gnu/libgd.a \
+                                   /lib/i386-linux-gnu/libgd.a \
+                                   /lib/x86_64-linux-gnu/libgd.a \
+                                   /lib/libgd.a \
+                                   /lib64/libgd.a \
+                                   /sw/lib/libgd.a \
+                                   /opt/sfw/lib/libgd.a \
+                                   /opt/local/lib/libgd.a))), 0)
+SYS_PROD_LIBS += gd png
+else
+sddsplot_LDFLAGS_Linux += -Wl,-Bdynamic -lgd -lpng -Wl,-Bstatic
+sddsplot_LDFLAGS_Default += -lgd -lpng
+endif
+else
+SYS_PROD_LIBS += gd png
+endif
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_INCLUDES += -I/opt/sfw/include -I/opt/local/include
+OP_SYS_LDFLAGS += -L/opt/sfw/lib -L/opt/local/lib -R/opt/sfw/lib -R/opt/local/lib
+endif
+endif
+
+ifeq ($(GDFOUND), 0)
+sddsplot_LIBS += mdbplt gd png
+gd_DIR = $(INSTALL_LIB)
+png_DIR = $(INSTALL_LIB)
+endif
+
+PROD_LIBS_DEFAULT = mdbplt mdbcommon SDDS1 mdbmth mdblib lzma Xaw Xmu Xt Xext X11
+PROD_LIBS_Darwin = mdbplt mdbcommon SDDS1 mdbmth mdblib lzma Xaw Xmu Xt Xext X11
+PROD_LIBS_solaris = mdbplt mdbcommon SDDS1 mdbmth mdblib lzma Xaw Xmu Xext
+PROD_LIBS_Linux = mdbplt mdbcommon matlib fftpack SDDS1 rpnlib mdbmth mdblib lzma
+
+#
+ifeq ($(OS_CLASS),Linux)
+ifeq ($(STATIC_BUILD),YES)
+STATIC_LDFLAGS_YES += -L$(X11_LIB)
+#OP_SYS_LDLIBS = -Wl,-Bdynamic -lXaw -lXmu -lXt -lXext -lX11 -Wl,-Bstatic
+ifeq ($(RHEL4_STATIC_BUILD),YES)
+OP_SYS_LDLIBS = -Wl,-Bdynamic -lXaw -Wl,-Bstatic -lXpm -lXmu -lXt -lSM -lICE -lXext -lX11 -lXdmcp -lXau -ldl
+else
+OP_SYS_LDLIBS = -lXaw -lXpm -lXmu -lXt -lSM -lICE -lXext -lX11 -lXdmcp -lXau -ldl
+endif
+else
+OP_SYS_LDLIBS += -L$(X11_LIB) -lXaw -lXmu -lXt -lXext -lX11
+endif #($(STATIC_BUILD),YES)
+ifndef BGL
+ifneq ($(words $(notdir $(wildcard /usr/include/fontconfig/fontconfig.h))), 0)
+ifeq ($(STATIC_BUILD),YES)
+
+ifneq ($(words $(notdir $(wildcard \
+/usr/lib/libfontconfig.a \
+/usr/lib64/libfontconfig.a \
+/usr/lib/i386-linux-gnu/libfontconfig.a \
+/usr/lib/x86_64-linux-gnu/libfontconfig.a))), 0)
+
+SYS_PROD_LIBS_Linux += fontconfig
+else
+OP_SYS_LDLIBS += -Wl,-Bdynamic -lfontconfig -Wl,-Bstatic 
+endif #($(words $(notdir $(wildcard /usr/lib/libfontconfig.a))), 0)
+else
+SYS_PROD_LIBS_Linux += fontconfig
+endif #($(STATIC_BUILD),YES)
+endif #($(words $(notdir $(wildcard /usr/include/fontconfig/fontconfig.h))), 0)
+endif #BGL
+endif #($(OS_CLASS),Linux)
+
+
+ifeq ($(SHARED_LIBRARIES), YES)
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../gsl))
+ifeq ($(GSL), 1)
+SYS_GSLLIB = 
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+SYS_GSLLIB = 
+endif
+endif
+else
+#Not building shared libraries so librpn does not need this.
+SYS_GSLLIB = 
+endif
+
+
+
+PROD_LIBS_WIN32 = mdbplt gd png mdbcommon SDDS1 mdbmth mdblib $(FDLIBM) z lzma
+PROD_LIBS_BORLANDC = mdbplt mdbcommon SDDS1 mdbmth mdblib fdlibm z lzma
+SYS_PROD_LIBS_DEFAULT = z  $(SYS_GSLLIB)
+SYS_PROD_LIBS_Linux += z $(SYS_GSLLIB) rt
+SYS_PROD_LIBS_Darwin += z $(SYS_GSLLIB)
+#SYS_PROD_LIBS_solaris = -nil-
+SYS_PROD_LIBS_solaris = z $(SYS_GSLLIB) rt Xt X11
+SYS_PROD_LIBS_sun4 = z suntool sunwindow pixrect
+SYS_PROD_LIBS_WIN32 = advapi32
+SYS_PROD_LIBS_BORLANDC = -nil-
+#ifeq ($(OS_CLASS),solaris)
+#OP_SYS_LDLIBS += -lz -lrt -lXt -lX11
+#endif
+
+fdlibm_DIR = $(INSTALL_LIB)
+mdbplt_DIR = $(INSTALL_LIB)
+mdbmth_DIR = $(INSTALL_LIB)
+mdbcommon_DIR = $(INSTALL_LIB)
+SDDS1_DIR = $(INSTALL_LIB)
+namelist_DIR = $(INSTALL_LIB)
+mdblib_DIR = $(INSTALL_LIB)
+matlib_DIR = $(INSTALL_LIB)
+rpnlib_DIR = $(INSTALL_LIB)
+fftpack_DIR = $(INSTALL_LIB)
+lzma_DIR = $(INSTALL_LIB)
+Xaw_DIR = $(X11_LIB)
+Xmu_DIR = $(X11_LIB)
+Xt_DIR = $(X11_LIB)
+Xext_DIR = $(X11_LIB)
+X11_DIR = $(X11_LIB)
+
+term_CFLAGS += -DUSE_GD_LIBRARY -I$(EPICS_BASE)/include
+ifeq ($(GDFOUND), 0)
+term_CFLAGS += -I../../../gd
+endif
+
+LIBSRCS = arrows.c plot_data_sets.c make_scales.c graphics.c psymbol.c \
+          term.c multi_plot.c
+
+sddsplot_SRCS = SDDSaps.c put_link_date.c sddsplot.c sddsplotAP.c sddsplotConvert.c \
+          sddsplotFilter.c sddsplotLabels.c sddsplotMapping.c sddsplotRead.c \
+          sddsplotRecord.c sddsplotXfer.c sddsplotGroup.c 
+
+mpl_x11_SRCS = gnuplot_x11.c
+mpl_x11g_SRCS = gnuplot_x11g.c
+mpl_x11c_SRCS = gnuplot_x11c1.c

@@ -1,0 +1,200 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+endif
+
+PROD_HOST = editstring replaceText
+
+USR_CFLAGS = -DH5_USE_16_API -I../../lzma -DzLib
+
+
+ifeq ($(SHARED_LIBRARIES), YES)
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../gsl))
+ifeq ($(GSL), 1)
+SYS_GSLLIB = 
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+SYS_GSLLIB = 
+endif
+endif
+else
+#Not building shared libraries so librpn does not need this.
+SYS_GSLLIB = 
+endif
+
+
+
+
+ifdef WIN32
+USR_LIBS += mdbcommon SDDS1 mdblib z lzma
+z_DIR = $(INSTALL_LIB)
+
+PROD_HOST += hdf2sdds sdds2hdf
+#PROD_HOST += ginger2sdds elegant2ginger
+hdf2sdds_LIBS += hdf5 libszip
+sdds2hdf_LIBS += hdf5 libszip
+ginger2sdds_LIBS += hdf5 libszip
+elegant2ginger_LIBS += hdf5 libszip
+ifeq ($(EPICS_HOST_ARCH),windows-x64)
+hdf2sdds_CFLAGS += -Ic:/hdf5/1.8.10.64bit/include
+sdds2hdf_CFLAGS += -Ic:/hdf5/1.8.10.64bit/include
+ginger2sdds_CFLAGS += -Ic:/hdf5/1.8.10.64bit/include
+elegant2ginger_CFLAGS += -Ic:/hdf5/1.8.10.64bit/include
+hdf5_DIR = c:/hdf5/1.8.10.64bit/lib
+libszip_DIR = c:/hdf5/1.8.10.64bit/lib
+else
+hdf2sdds_CFLAGS += -Ic:/hdf5/1.8.10.32bit/include
+sdds2hdf_CFLAGS += -Ic:/hdf5/1.8.10.32bit/include
+ginger2sdds_CFLAGS += -Ic:/hdf5/1.8.10.32bit/include
+elegant2ginger_CFLAGS += -Ic:/hdf5/1.8.10.32bit/include
+hdf5_DIR = c:/hdf5/1.8.10.32bit/lib
+libszip_DIR = c:/hdf5/1.8.10.32bit/lib
+endif
+else
+USR_LIBS = mdbcommon matlib fftpack SDDS1 rpnlib mdbmth mdblib lzma
+SYS_PROD_LIBS_DEFAULT += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_Darwin += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_Linux += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_solaris += -nil-
+
+
+#Build hdf2sdds on Linux if the HDF5 library is installed.
+#The HDF5 library should already be installed.
+#If it is not already installed, it can be easily installed using an RPM.
+ifeq ($(OS_CLASS),Linux)
+HDF_LIB_LOCATION = $(wildcard \
+/usr/lib/libhdf5.a \
+/usr/lib/libhdf5.so \
+/usr/lib64/libhdf5.a \
+/usr/lib64/libhdf5.so \
+/usr/lib/i386-linux-gnu/libhdf5.so \
+/usr/lib/i386-linux-gnu/libhdf5.a \
+/usr/lib/x86_64-linux-gnu/libhdf5.so \
+/usr/lib/x86_64-linux-gnu/libhdf5.a)
+
+ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+PROD_HOST += hdf2sdds sdds2hdf
+#PROD_HOST += ginger2sdds elegant2ginger
+SYS_PROD_LIBS_Linux += hdf5
+endif #ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+endif #ifeq ($(OS_CLASS),Linux)
+
+#Build hdf2sdds on OSX if the HDF5 library is installed.
+ifeq ($(OS_CLASS),Darwin)
+HDF_LIB_LOCATION = $(wildcard \
+/sw/lib/libhdf5.a \
+/sw/lib/libhdf5.so \
+/opt/local/lib/libhdf5.a \
+/opt/local/lib/libhdf5.so)
+
+ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+PROD_HOST += hdf2sdds sdds2hdf
+#PROD_HOST += ginger2sdds elegant2ginger
+SYS_PROD_LIBS_Darwin += hdf5
+endif #ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+endif #ifeq ($(OS_CLASS),Darwin)
+
+
+#If on 32bit Solaris, check if the local HDF5 librarys exists. If they do
+#then build hdf2sdds
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_LDLIBS += -lz -lrt
+
+ifneq ($(EPICS_HOST_ARCH),solaris-x86)
+ifneq ($(EPICS_HOST_ARCH),solaris-x86_64)
+ifneq ($(EPICS_HOST_ARCH),solaris-sparc64)
+ifneq ($(EPICS_HOST_ARCH),solaris-sparc-gnu)
+ifneq ($(ANSI), GCC)
+
+HDF_LIB_LOCATION = $(wildcard /home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/hdf/solaris-sparc/lib/libhdf5.a)
+HDF_INCLUDE_LOCATION = $(wildcard /home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/hdf/solaris-sparc/include/hdf5.h)
+SZIP_LIB_LOCATION = $(wildcard /home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/szip/solaris-sparc/lib/libsz.a)
+
+ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+ifneq ($(words $(notdir $(HDF_INCLUDE_LOCATION))), 0)
+ifneq ($(words $(notdir $(SZIP_LIB_LOCATION))), 0)
+
+PROD_HOST += hdf2sdds sdds2hdf
+#PROD_HOST += ginger2sdds elegant2ginger
+SYS_PROD_LIBS_solaris += hdf5 sz
+SYS_PROD_LIBS_solaris += socket nsl z $(SYS_GSLLIB)
+USR_LDFLAGS += -L/home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/hdf/solaris-sparc/lib -L/home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/szip/solaris-sparc/lib
+USR_CFLAGS += -I/home/oxygen/SOLIDAY/epics/extensions/src/SDDS/utils/hdf/solaris-sparc/include
+   
+endif #ifneq ($(words $(notdir $(SZIP_LIB_LOCATION))), 0)
+endif #ifneq ($(words $(notdir $(HDF_INCLUDE_LOCATION))), 0)
+endif #ifneq ($(words $(notdir $(HDF_LIB_LOCATION))), 0)
+
+endif #ifneq ($(ANSI), GCC)
+endif #ifneq ($(EPICS_HOST_ARCH),solaris-sparc-gnu)
+endif #ifneq ($(EPICS_HOST_ARCH),solaris-sparc64)
+endif #ifneq ($(EPICS_HOST_ARCH),solaris-x86_64)
+endif #ifneq ($(EPICS_HOST_ARCH),solaris-x86)
+endif #ifeq ($(OS_CLASS),solaris)
+endif #ifdef WIN32
+
+
+
+
+
+
+mdblib_DIR = $(INSTALL_LIB)
+mdbcommon_DIR = $(INSTALL_LIB)
+SDDS1_DIR = $(INSTALL_LIB)
+matlib_DIR = $(INSTALL_LIB)
+fftpack_DIR = $(INSTALL_LIB)
+rpnlib_DIR = $(INSTALL_LIB)
+mdbmth_DIR = $(INSTALL_LIB)
+lzma_DIR = $(INSTALL_LIB)

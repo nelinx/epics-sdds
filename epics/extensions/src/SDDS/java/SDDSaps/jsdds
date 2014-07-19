@@ -1,0 +1,11 @@
+#!/bin/sh  
+# \
+exec tclsh "$0" "$@"
+
+set dir [file dir [exec which SDDSaps.jar]]
+
+set classpath [file join $dir SDDSaps.jar]
+
+if {[catch {eval exec java -cp $classpath SDDS/java/SDDSaps/$argv} results]} {
+    puts stderr $results
+}

@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/AOP/SDDS/!svn/ver/3724/trunk/lzma/lzma
+END
+delta.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/delta.h
+END
+base.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/AOP/SDDS/!svn/ver/3724/trunk/lzma/lzma/base.h
+END
+block.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/block.h
+END
+index_hash.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/index_hash.h
+END
+vli.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/vli.h
+END
+check.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/check.h
+END
+hardware.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/hardware.h
+END
+bcj.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/bcj.h
+END
+container.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/AOP/SDDS/!svn/ver/3724/trunk/lzma/lzma/container.h
+END
+lzma.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/lzma.h
+END
+filter.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/filter.h
+END
+version.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/version.h
+END
+index.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/index.h
+END
+stream_flags.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/AOP/SDDS/!svn/ver/3716/trunk/lzma/lzma/stream_flags.h
+END

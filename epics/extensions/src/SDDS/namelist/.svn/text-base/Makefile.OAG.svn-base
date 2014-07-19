@@ -1,0 +1,150 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+#
+# $Log: not supported by cvs2svn $
+# Revision 1.10  2005/07/29 21:14:31  soliday
+# Updated to build with Blue Gene/L. linux-ppc-bgl-gnu
+#
+# Revision 1.9  2005/01/21 20:30:43  soliday
+# Updated to support purify on Linux
+#
+# Revision 1.8  2004/03/16 16:57:11  soliday
+# Updated purify, quantify, and purecov build rules
+#
+# Revision 1.7  2003/08/28 21:54:38  soliday
+# Use PROD for EPICS version 3.13 and PROD_HOST for newer versions.
+#
+# Revision 1.6  2003/08/28 20:35:17  soliday
+# Cleaned up the code.
+#
+# Revision 1.5  2003/07/25 15:35:36  soliday
+# Simplified makefile
+#
+# Revision 1.4  2003/07/23 19:14:18  soliday
+# Added change for solaris
+#
+# Revision 1.3  2003/07/23 16:28:52  soliday
+# Fixed to work with WIN32
+#
+# Revision 1.2  2003/07/23 05:40:52  soliday
+# Changed PROD_LIBS to USR_LIBS
+#
+# Revision 1.1  2003/07/22 23:25:17  soliday
+# Modified makefiles to work with base versions 3.13 and 3.14
+#
+#
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+PROD = nlpp
+else
+PROD_HOST = nlpp 
+endif
+LIBRARY = namelist
+
+USR_CFLAGS = -I../../include 
+ifeq ($(CONDOR_COMPILE),1)
+  USR_CFLAGS += -DCONDOR_COMPILE
+endif
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+endif
+
+
+LIBSRCS = 	escape_quotes.c free_namelist.c \
+		free_namelist_text.c get_namelist.c \
+		namelist_etc.c print_namelist.c \
+		process_namelist.c scan_namelist.c \
+		show_namelist.c show_namelist_fields.c \
+		zero_namelist.c
+
+nlpp_SRCS = namelist_pp$(OBJ)
+
+ifeq ($(SHARED_LIBRARIES), YES)
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../gsl))
+ifeq ($(GSL), 1)
+SYS_GSLLIB = 
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+SYS_GSLLIB = 
+endif
+endif
+else
+#Not building shared libraries so librpn does not need this.
+SYS_GSLLIB = 
+endif
+
+ifdef WIN32
+PROD_LIBS += rpnlib mdblib
+DLL_LIBS += rpnlib mdblib
+else
+USR_LIBS = rpnlib mdblib
+SYS_PROD_LIBS_DEFAULT = z $(SYS_GSLLIB)
+SYS_PROD_LIBS_Linux = z $(SYS_GSLLIB)
+SYS_PROD_LIBS_solaris = z $(SYS_GSLLIB)
+endif
+
+rpnlib_DIR = $(INSTALL_LIB)
+mdblib_DIR = $(INSTALL_LIB)
+
+ifdef WIN32
+LIB_SUFFIX=.lib
+SHARED_LIBRARIES = NO
+endif
+ifeq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+LIB_SUFFIX=.lib
+SHARED_LIBRARIES = NO
+endif
+ifeq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+LIB_SUFFIX=.lib
+SHARED_LIBRARIES = NO
+endif

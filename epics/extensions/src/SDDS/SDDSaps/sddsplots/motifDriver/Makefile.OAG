@@ -1,0 +1,211 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR=ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+endif
+
+STATIC_BUILD=NO
+
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+PROD = mpl_motif
+else
+PROD_HOST = mpl_motif
+endif
+
+USR_CFLAGS = 	-I../../../../include -I../../../../lzma -I$(MOTIF_INC) \
+		-I$(X11_INC) -DXREL5 -DzLib
+
+ifeq ($(OS_CLASS),solaris)
+ifneq ($(words $(notdir $(wildcard $(X11_LIB)/libz.a $(X11_LIB)/libz.so))), 0)
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+OPT_LDFLAGS += -L/usr/lib
+else
+STATIC_LDFLAGS += -L/usr/lib
+endif
+endif
+endif
+
+
+GDFOUND = 1
+GD = $(words $(notdir $(wildcard \
+/usr/lib/libgd.a \
+/usr/lib/libgd.so \
+/usr/lib64/libgd.a \
+/usr/lib64/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.so \
+/usr/lib/i386-linux-gnu/libgd.a \
+/usr/lib/x86_64-linux-gnu/libgd.so \
+/usr/lib/x86_64-linux-gnu/libgd.a \
+/lib/i386-linux-gnu/libgd.so \
+/lib/i386-linux-gnu/libgd.a \
+/lib/x86_64-linux-gnu/libgd.so \
+/lib/x86_64-linux-gnu/libgd.a \
+/lib/libgd.a \
+/lib/libgd.so \
+/lib64/libgd.a \
+/lib64/libgd.so \
+/sw/lib/libgd.a \
+/sw/lib/libgd.dylib \
+/opt/local/lib/libgd.a \
+/opt/local/lib/libgd.dylib \
+/opt/sfw/lib/libgd.a \
+/opt/sfw/lib/libgd.so \
+/opt/local/lib/libgd.so )))
+GDINC = $(words $(notdir $(wildcard \
+/usr/include/gd.h \
+/include/gd.h \
+/sw/include/gd.h \
+/opt/sfw/include/gd.h \
+/opt/local/include/gd.h )))
+
+ifeq ($(GD), 0)
+GDFOUND = 0
+else
+ifeq ($(GDINC), 0)
+GDFOUND = 0
+endif
+endif
+
+ifneq ($(GDFOUND), 0)
+ifeq ($(STATIC_BUILD),YES)
+ifneq ($(words $(notdir $(wildcard /usr/lib/libgd.a \
+                                   /usr/lib64/libgd.a \
+                                   /usr/lib/i386-linux-gnu/libgd.a \
+                                   /usr/lib/x86_64-linux-gnu/libgd.a \
+                                   /lib/libgd.a \
+                                   /lib64/libgd.a \
+                                   /sw/lib/libgd.a \
+                                   /opt/sfw/lib/libgd.a \
+                                   /opt/local/lib/libgd.a))), 0)
+SYS_PROD_LIBS += gd png
+else
+OP_SYS_LDLIBS += -lgd -lpng
+endif
+else
+SYS_PROD_LIBS += gd png
+endif
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_INCLUDES += -I/opt/sfw/include -I/opt/local/include
+OP_SYS_LDFLAGS += -L/opt/sfw/lib -L/opt/local/lib -R/opt/sfw/lib -R/opt/local/lib
+endif
+endif
+
+ifeq ($(GDFOUND), 0)
+mpl_motif_LIBS += mdbplt gd png
+gd_DIR = $(INSTALL_LIB)
+png_DIR = $(INSTALL_LIB)
+endif
+
+
+PROD_LIBS_DEFAULT = mdbplt SDDS1 rpnlib mdbmth mdblib lzma Xm Xmu Xt X11
+PROD_LIBS_Darwin = mdbplt SDDS1 rpnlib mdbmth mdblib lzma Xm Xmu Xt X11
+PROD_LIBS_solaris = mdbplt SDDS1 rpnlib mdbmth mdblib lzma Xm Xmu Xt X11
+#PROD_LIBS_Linux = mdbplt SDDS1 rpnlib mdbmth mdblib lzma Xm Xmu Xt X11 Xpm
+PROD_LIBS_Linux = mdbplt SDDS1 rpnlib mdbmth mdblib lzma
+ifeq ($(OS_CLASS),Linux)
+ifeq ($(STATIC_BUILD),YES)
+STATIC_LDFLAGS_YES += -L$(X11_LIB)
+OP_SYS_LDLIBS = -Wl,-Bdynamic -lXm -lXt -lXmu -lX11 -lXpm -Wl,-Bstatic
+#OP_SYS_LDLIBS = -lXm -ljpeg -lXp -lXext -lXft -lfontconfig -lfreetype -lexpat -lXrender -lXt -lSM -lICE -lXmu -lX11 -lXdmcp -lXau -ldl -lXpm -lpthread
+else
+PROD_LIBS_Linux += Xm Xt Xmu X11 Xpm
+endif
+endif
+
+ifeq ($(OS_CLASS),Darwin)
+PROD_LIBS_Darwin = mdbplt SDDS1 rpnlib mdbmth mdblib lzma Xmu Xt X11
+OP_SYS_LDLIBS = -lXm -ljpeg -lXp -lfontconfig -lXext -lXft -lXmu -lXt -lX11 -lgd -lpng -liconv
+endif
+
+ifeq ($(SHARED_LIBRARIES), YES)
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../gsl))
+ifeq ($(GSL), 1)
+SYS_GSLLIB = 
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+SYS_GSLLIB = 
+endif
+endif
+else
+#Not building shared libraries so librpn does not need this.
+SYS_GSLLIB = 
+endif
+
+
+
+SYS_PROD_LIBS_DEFAULT += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_Darwin += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_Linux += z $(SYS_GSLLIB)
+SYS_PROD_LIBS_solaris += z $(SYS_GSLLIB) Xm Xt X11
+#SYS_PROD_LIBS_solaris += -nil-
+#ifeq ($(OS_CLASS),solaris)
+#OP_SYS_LDLIBS += -lz -lXm -lXt -lX11
+#endif
+
+Xm_DIR = $(MOTIF_LIB)
+Xmu_DIR = $(X11_LIB)
+Xt_DIR = $(X11_LIB)
+X11_DIR = $(X11_LIB)
+Xpm_DIR = $(X11_LIB)
+mdblib_DIR = $(INSTALL_LIB)
+mdbmth_DIR = $(INSTALL_LIB)
+mdbplt_DIR = $(INSTALL_LIB)
+SDDS1_DIR = $(INSTALL_LIB)
+rpnlib_DIR = $(INSTALL_LIB)
+hclsdds_DIR = $(INSTALL_LIB)
+lzma_DIR = $(INSTALL_LIB)
+
+SYS_LIBS_sun4 += suntool sunwindow pixrect
+
+SRCS = mpl_motif.c xwdfunc.c

@@ -1,0 +1,12 @@
+#!/bin/sh  
+# \
+exec tclsh "$0" "$@"
+
+set dir [file dir [exec which SDDS3Dplot.jar]]
+
+set classpath [file join $dir SDDS3Dplot.jar]:[file join $dir visad.jar]:[file join $dir j3dcore.jar]:[file join $dir j3dutils.jar]:[file join $dir vecmath.jar]
+
+if {[catch {eval exec java -Djava.library.path=/usr/local/oag/apps/bin/$env(EPICS_HOST_ARCH) -cp $classpath  SDDS.java/SDDS3Dplot.Application1 $argv} results]} {
+    puts stderr $results
+}
+

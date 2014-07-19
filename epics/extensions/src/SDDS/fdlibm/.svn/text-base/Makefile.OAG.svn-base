@@ -1,0 +1,27 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+USR_CFLAGS = -I../../include -DEXPORT_FDLIBM
+
+LIBRARY = fdlibm
+
+LIBSRCS = e_exp.c \
+        e_lgamma_r.c \
+        e_log.c \
+        s_erf.c \
+        s_rint.c \
+        s_signgam.c \
+        w_lgamma.c \
+        k_cos.c \
+        k_sin.c \
+        k_standard.c
+
+

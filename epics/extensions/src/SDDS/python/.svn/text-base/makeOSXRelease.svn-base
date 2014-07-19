@@ -1,0 +1,11 @@
+rm -f darwin-x86_SDDSPython2.7.tar darwin-x86_SDDSPython2.7.tar.gz
+make clean
+make
+cp O.darwin-x86/sddsdatamodule.3.14.12.dylib sddsdatamodule.so
+mv demo SDDS_demo
+tar -cvf darwin-x86_SDDSPython2.7.tar sddsdatamodule.so sdds.py SDDS_demo/demo SDDS_demo/pythonReadExample.sdds
+mv SDDS_demo demo
+gzip -9 darwin-x86_SDDSPython2.7.tar
+
+
+ 

@@ -1,0 +1,371 @@
+#*************************************************************************
+# Copyright (c) 2002 The University of Chicago, as Operator of Argonne
+# National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+# Operator of Los Alamos National Laboratory.
+# This file is distributed subject to a Software License Agreement found
+# in the file LICENSE that is included with this distribution. 
+#*************************************************************************
+
+CMPLR = ANSI
+
+#RATIONAL = purify
+#RATIONAL = quantify
+#RATIONAL = purecov
+ifdef RATIONAL
+HOST_OPT = NO
+CC := $(RATIONAL) -best-effort $(CC)
+CCC := $(RATIONAL) -best-effort $(CCC)
+endif
+
+USR_CFLAGS += 	-I. -I../../include -I../../lzma -DzLib
+USR_CPPFLAGS += -I. -I../../include -I../../lzma -DzLib
+ifeq ($(OS_CLASS),solaris)
+ACC_DEP_CFLAGS += -KPIC -v
+CCC_DEP_CFLAGS += -KPIC -v
+GCC_DEP_CFLAGS += -D__EXTENSIONS__
+endif
+
+SDDSPROD = citi2sdds \
+        csv2sdds \
+        elegant2genesis \
+        hpif2sdds \
+        hpwf2sdds \
+        image2sdds \
+        lba2sdds \
+        mcs2sdds \
+        mpl2sdds \
+        plaindata2sdds \
+        raw2sdds \
+        sdds2dinterpolate \
+        sdds2math \
+        sdds2mpl \
+        sdds2plaindata \
+        sdds2stl \
+        sdds2stream \
+        sddsarray2column \
+        sddsbaseline \
+        sddsbinarystring \
+        sddsbreak \
+        sddscast \
+        sddschanges \
+        sddscheck \
+        sddscliptails \
+        sddscollapse \
+        sddscollect \
+        sddscombine \
+        sddscombinelogfiles \
+        sddsconvert \
+        sddsconvertlogonchange \
+        sddsconvolve \
+        sddscorrelate \
+        sddsderef \
+        sddsderiv \
+        sddsdiff \
+        sddsdigfilter \
+        sddsdistest \
+        sddsduplicate \
+        sddsendian \
+        sddsenvelope \
+        sddseventhist \
+        sddsexpand \
+        sddsexpfit \
+        sddsfdfilter \
+        sddsfft \
+        sddsgenericfit \
+        sddsgfit \
+        sddshist \
+        sddsimageprofiles \
+        sddsinteg \
+        sddsinterp \
+        sddsinterpset \
+        sddsmakedataset \
+        sddsmatrixmult \
+        sddsminterp \
+        sddsmpfit \
+        sddsmselect \
+        sddsmultihist \
+        sddsmxref \
+        sddsnaff \
+        sddsnormalize \
+        sddsoutlier \
+        sddspeakfind \
+        sddspfit \
+        sddspoly \
+        sddsprintout \
+        sddsprocess \
+        sddsquery \
+        sddsregroup \
+        sddsrowstats \
+        sddsrunstats \
+        sddssampledist \
+        sddsselect \
+        sddsseparate \
+        sddssequence \
+        sddsshift \
+        sddsshiftcor \
+        sddssinefit \
+        sddsslopes \
+        sddssmooth \
+        sddssort \
+        sddssortcolumn \
+        sddssplit \
+        sddsspotanalysis \
+        sddstimeconvert \
+        sddstranspose \
+        sddsvslopes \
+        sddsxref \
+        sddszerofind \
+        tek2sdds \
+        TFS2sdds \
+        wfm2sdds
+
+ifneq ($(EPICS_HOST_ARCH),linux-ppc64-xl)
+SDDSPROD += sdds2spreadsheet
+endif
+        
+ifndef WIN32
+ifneq ($(OS_CLASS),Darwin)
+ifneq ($(EPICS_HOST_ARCH),win32-x86-mingw)
+ifneq ($(EPICS_HOST_ARCH),windows-x64-mingw)
+ifneq ($(EPICS_HOST_ARCH),linux-ppc64-xl)
+ifeq ($(EPICS_HOST_ARCH),solaris-sparc)
+ifeq ($(SHARED_LIBRARIES),NO)
+SDDSPROD += agilentwaveform2sdds agilentcomm stl2sdds
+endif
+else
+SDDSPROD += agilentwaveform2sdds agilentcomm stl2sdds
+endif
+endif
+endif
+endif
+endif
+endif
+
+ifndef BGL
+SDDSPROD += sdds2tiff tiff2sdds
+endif
+
+ifeq ($(EPICS_VERSION).$(EPICS_REVISION),3.13)
+PROD = $(SDDSPROD)
+else
+PROD_HOST = $(SDDSPROD)
+endif
+
+
+#Look for private version of GSL used here at APS
+GSL = $(words $(wildcard ../../gsl))
+ifeq ($(GSL), 1)
+GSLLIB = gsl gslcblas
+SYS_GSLLIB = 
+GSL_DIR = $(INSTALL_LIB)
+GSLCBLAS_DIR = $(INSTALL_LIB)
+else
+
+#Look for system version of GSL
+SYSGSL = $(words $(notdir $(wildcard \
+/usr/lib/libgsl.a \
+/usr/lib/libgsl.so \
+/usr/lib64/libgsl.a \
+/usr/lib64/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.so \
+/usr/lib/i386-linux-gnu/libgsl.a \
+/usr/lib/x86_64-linux-gnu/libgsl.so \
+/usr/lib/x86_64-linux-gnu/libgsl.a \
+/lib/i386-linux-gnu/libgsl.so \
+/lib/i386-linux-gnu/libgsl.a \
+/lib/x86_64-linux-gnu/libgsl.so \
+/lib/x86_64-linux-gnu/libgsl.a \
+/lib/libgsl.a \
+/lib/libgsl.so \
+/lib64/libgsl.a \
+/lib64/libgsl.so \
+/sw/lib/libgsl.a \
+/sw/lib/libgsl.dylib \
+/opt/local/lib/libgsl.a \
+/opt/local/lib/libgsl.dylib \
+/usr/sfw/lib/libgsl.a \
+/usr/sfw/lib/libgsl.so )))
+
+ifneq ($(SYSGSL), 0)
+GSLLIB = 
+SYS_GSLLIB = gsl gslcblas
+else
+
+#No GSL library found. Build without it.
+GSLLIB = 
+SYS_GSLLIB = 
+endif
+endif
+ifeq ($(SHARED_LIBRARIES), YES)
+SYS_GSLLIB_SHARED = $(SYS_GSLLIB)
+else
+SYS_GSLLIB_SHARED =
+endif
+
+
+
+PROD_LIBS_DEFAULT = mdbcommon matlib fftpack rpnlib SDDS1 mdbmth mdblib nnetwork csa lzma
+ifdef WIN32
+PROD_LIBS_WIN32 = mdbcommon matlib fftpack rpnlib SDDS1 mdbmth mdblib nnetwork csa z fdlibm lzma
+endif
+PROD_LIBS_BORLANDC = mdbcommon matlib fftpack rpnlib SDDS1 mdbmth mdblib z fdlibm lzma
+SYS_PROD_LIBS_DEFAULT = z $(SYS_GSLLIB_SHARED)
+SYS_PROD_LIBS_Linux = z $(SYS_GSLLIB_SHARED)
+SYS_PROD_LIBS_solaris = z $(SYS_GSLLIB_SHARED) rt
+SYS_PROD_LIBS_WIN32 = -nil-
+#ifeq ($(OS_CLASS),solaris)
+#OP_SYS_LDLIBS += -lz -lrt
+#endif
+
+#Look for private version of XLSLIB used here at APS
+#xlslib can be found at http://sourceforge.net/projects/xlslib/files/
+XLS = $(words $(wildcard ../../xlslib))
+ifeq ($(XLS), 1)
+sdds2spreadsheet_CFLAGS = -I../../xlslib -DUSE_XLS
+sdds2spreadsheet_LIBS = mdbcommon matlib fftpack rpnlib SDDS1 mdbmth mdblib xls
+ifeq ($(OS_CLASS),Darwin)
+sdds2spreadsheet_SYS_LIBS += iconv 
+endif
+xls_DIR = $(INSTALL_LIB)
+endif
+
+
+
+sddsprocess_LIBS = mdbcommon matlib fftpack rpnlib $(GSLLIB) SDDS1c mdbmth mdblib
+sddsgenericfit_LIBS = mdbcommon matlib fftpack rpnlib $(GSLLIB) SDDS1c mdbmth mdblib
+sddsprocess_SYS_LIBS += $(SYS_GSLLIB)
+sddsgenericfit_SYS_LIBS += $(SYS_GSLLIB)
+
+lzma_DIR = $(INSTALL_LIB)
+z_DIR = $(INSTALL_LIB)
+mdbmth_DIR = $(INSTALL_LIB)
+SDDS1_DIR = $(INSTALL_LIB)
+fftpack_DIR = $(INSTALL_LIB)
+matlib_DIR = $(INSTALL_LIB)
+mdblib_DIR = $(INSTALL_LIB)
+mdbcommon_DIR = $(INSTALL_LIB)
+rpnlib_DIR = $(INSTALL_LIB)
+SDDS1c_DIR = $(INSTALL_LIB)
+fdlibm_DIR = $(INSTALL_LIB)
+nnetwork_dir = $(INSTALL_LIB)
+csa_dir = $(INSTALL_LIB)
+
+sddsprocess_CFLAGS = -DRPN_SUPPORT
+sddsgenericfit_CFLAGS = -DRPN_SUPPORT
+
+sdds2mpl_SRCS = SDDSaps.c sdds2mpl.c
+sddsbinarystring_SRCS = SDDSutils.c sddsbinarystring.c
+sddscorrelate_SRCS = SDDSutils.c sddscorrelate.c
+sddsderiv_SRCS = SDDSutils.c sddsderiv.c
+sddsdistest_SRCS = SDDSutils.c sddsdistest.c
+sddsfdfilter_SRCS = SDDSutils.c sddsfdfilter.c
+sddsfft_SRCS = SDDSutils.c sddsfft.c
+sddsgenericfit_SRCS = SDDSaps.c sddsgenericfit.c
+sddsnaff_SRCS = SDDSutils.c sddsnaff.c
+sddsinteg_SRCS = SDDSutils.c sddsinteg.c
+sddsinterp_SRCS = SDDSutils.c sddsinterp.c
+sddsmultihist_SRCS = SDDSutils.c sddsmultihist.c
+sddsmxref_SRCS = SDDSaps.c sddsmxref.c
+sddsoutlier_SRCS = SDDSutils.c sddsoutlier.c
+sddsprocess_SRCS = SDDSaps.c sddsprocess.c
+sddsrowstats_SRCS = SDDSutils.c sddsrowstats.c
+sddsrunstats_SRCS = SDDSutils.c sddsrunstats.c
+sddsshiftcor_SRCS = SDDSutils.c sddsshiftcor.c
+sddsspotanalysis_SRCS = sddsspotanalysis.c SDDSutils.c
+sddstranspose_SRCS = sddstranspose.c SDDSutils.c
+sddsxref_SRCS = SDDSaps.c sddsxref.c
+tiff2sdds_SRCS = tiff2sdds.c
+sddsdiff_SRCS = SDDSutils.c sddsdiff.c
+sddsdigfilter_SRCS = SDDSutils.c sddsdigfilter.c
+sddstranspose_SRCS = SDDSutils.c sddstranspose.c
+
+ifndef BGL
+TIFFLOCATION = $(wildcard /usr/lib/libtiff.a \
+                          /usr/lib/libtiff.so \
+                          /usr/lib64/libtiff.a \
+                          /usr/lib64/libtiff.so \
+                          /usr/lib/i386-linux-gnu/libtiff.so \
+                          /usr/lib/i386-linux-gnu/libtiff.a \
+                          /usr/lib/x86_64-linux-gnu/libtiff.so \
+                          /usr/lib/x86_64-linux-gnu/libtiff.a \
+                          /lib/i386-linux-gnu/libtiff.so \
+                          /lib/i386-linux-gnu/libtiff.a \
+                          /lib/x86_64-linux-gnu/libtiff.so \
+                          /lib/x86_64-linux-gnu/libtiff.a \
+                          /lib/libtiff.a \
+                          /lib/libtiff.so \
+                          /lib64/libtiff.a \
+                          /lib64/libtiff.so \
+                          /sw/lib/libtiff.a \
+                          /sw/lib/libtiff.dylib \
+                          /opt/local/lib/libtiff.a \
+                          /opt/local/lib/libtiff.dylib \
+                          /usr/sfw/lib/libtiff.a \
+                          /usr/sfw/lib/libtiff.so )
+TIFFINCLOCATION = $(wildcard /usr/include/tiffio.h \
+                             /include/tiffio.h \
+                             /sw/include/tiffio.h \
+                             /opt/local/include/tiffio.h \
+                             /usr/sfw/include/tiffio.h )
+TIFF = $(words $(notdir $(TIFFLOCATION)))
+TIFFINC = $(words $(notdir $(TIFFINCLOCATION)))
+
+TIFFFOUND = 0
+ifneq ($(TIFF), 0)
+ifneq ($(TIFFINC), 0)
+ifeq ($(STATIC_BUILD),YES)
+ifneq ($(words $(notdir $(wildcard /usr/lib/libtiff.a \
+                                   /usr/lib64/libtiff.a \
+                                   /usr/lib/i386-linux-gnu/libtiff.a \
+                                   /usr/lib/x86_64-linux-gnu/libtiff.a \
+                                   /lib/i386-linux-gnu/libtiff.a \
+                                   /lib/x86_64-linux-gnu/libtiff.a \
+                                   /lib/libtiff.a \
+                                   /lib64/libtiff.a \
+                                   /sw/lib/libtiff.a \
+                                   /opt/local/lib/libtiff.a \
+                                   /usr/sfw/lib/libtiff.a))), 0)
+SYS_PROD_LIBS += tiff
+else
+sdds2tiff_LDFLAGS_Linux += -Wl,-Bdynamic -ltiff -Wl,-Bstatic
+sdds2tiff_LDFLAGS_Default += -ltiff
+tiff2sdds_LDFLAGS_Linux += -Wl,-Bdynamic -ltiff -Wl,-Bstatic
+tiff2sdds_LDFLAGS_Default += -ltiff
+endif
+ifneq ($(words $(notdir $(wildcard /usr/lib/libjpeg.a \
+                                   /usr/lib64/libjpeg.a \
+                                   /usr/lib/i386-linux-gnu/libjpeg.a \
+                                   /usr/lib/x86_64-linux-gnu/libjpeg.a \
+                                   /lib/i386-linux-gnu/libjpeg.a \
+                                   /lib/x86_64-linux-gnu/libjpeg.a \
+                                   /lib/libjpeg.a \
+                                   /lib64/libjpeg.a \
+                                   /sw/lib/libjpeg.a \
+                                   /opt/local/lib/libjpeg.a \
+                                   /usr/sfw/lib/libjpeg.a))), 0)
+SYS_PROD_LIBS += jpeg
+else
+sdds2tiff_LDFLAGS_Linux += -Wl,-Bdynamic -ljpeg -Wl,-Bstatic
+sdds2tiff_LDFLAGS_Default += -ljpeg
+tiff2sdds_LDFLAGS_Linux += -Wl,-Bdynamic -ljpeg -Wl,-Bstatic
+tiff2sdds_LDFLAGS_Default += -ljpeg
+endif
+else
+SYS_PROD_LIBS += tiff jpeg
+endif
+TIFFFOUND = 1
+ifeq ($(OS_CLASS),solaris)
+OP_SYS_INCLUDES += -I/usr/sfw/include
+OP_SYS_LDFLAGS += -L/usr/sfw/lib -R/usr/sfw/lib
+endif
+endif #ifneq ($(TIFFINC), 0)
+endif #ifneq ($(TIFF), 0)
+
+ifeq ($(TIFFFOUND), 0)
+tiff2sdds_LIBS = tiff
+sdds2tiff_LIBS = tiff
+tiff_DIR = $(INSTALL_LIB)
+endif #ifeq ($(TIFFFOUND), 0)
+
+endif
