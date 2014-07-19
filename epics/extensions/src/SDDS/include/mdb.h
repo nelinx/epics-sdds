@@ -1352,7 +1352,9 @@ epicsShareFuncMDBMTH short interp_short(short *f, double *x, long n, double xo, 
 
 
 #ifdef __cplusplus
+} // extern "C" {
 #include <complex>
+extern "C" {
 epicsShareFuncMDBMTH std::complex <double> complexErf(std::complex <double> z, long *flag);
 epicsShareFuncMDBMTH std::complex <double> cexpi(double p);
 epicsShareFuncMDBMTH std::complex <double> cipowr(std::complex <double> a, int n);
