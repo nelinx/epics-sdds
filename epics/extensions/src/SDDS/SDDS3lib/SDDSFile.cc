@@ -6262,7 +6262,7 @@ int32_t SDDSFile::openInputFile() {
     }
     //setvbuf(fp, NULL, _IOFBF, BUFSIZ);
 #if defined(zLib)
-    if ((extension = strrchr(fileName, '.')) && strcmp(extension, ".gz")==0) {
+    if (gzipFile || ((extension = strrchr(fileName, '.')) && strcmp(extension, ".gz")==0)) {
       gzipFile = true;
       gzfp=(void**)gzdopen(fileno(fp), "rb");
       if (gzfp == NULL) {
