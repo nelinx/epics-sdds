@@ -1,4 +1,5 @@
 #define __STDC_FORMAT_MACROS 1
+#include <stdio.h>
 #if defined(_WIN32)
 #include <stdlib.h>
 #include <float.h>
