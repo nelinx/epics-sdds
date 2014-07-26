@@ -1,3 +1,5 @@
+#ifndef _SDDS3_H
+#define _SDDS3_H
 #define __STDC_FORMAT_MACROS 1
 #include <stdio.h>
 #if defined(_WIN32)
@@ -983,4 +985,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 
+#endif
 #endif
