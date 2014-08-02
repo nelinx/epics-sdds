@@ -283,7 +283,7 @@ int32_t SDDS_InitializeInput(SDDS_DATASET *SDDS_dataset, char *filename)
     SDDS_dataset->layout.fp = stdin;
   } else {
 #if defined(zLib)
-    if (!(extension = strrchr(filename, '.')) || strcmp(extension, ".gz")!=0) {
+    if (0) {
 #endif
       if ((extension = strrchr(filename, '.')) && ((strcmp(extension, ".lzma")==0) || (strcmp(extension, ".xz")==0))) {
         SDDS_dataset->layout.lzmaFile = 1;
