@@ -215,7 +215,7 @@ typedef enum {
 		 * applications a little.
 		 */
 
-	LZMA_PROG_ERROR         = 11,
+	LZMA_PROG_ERROR         = 11
 		/**<
 		 * \brief       Programming error
 		 *
