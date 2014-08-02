@@ -2,7 +2,7 @@
 
 ADD_LIBRARY(
 	lzma
-	STATIC
+	SHARED
 	lzma/alone_decoder.c
 	lzma/alone_encoder.c
 	lzma/arm.c
@@ -95,7 +95,7 @@ INCLUDE_DIRECTORIES(
 
 ADD_LIBRARY(
 	SDDSlib
-	STATIC
+	SHARED
 	SDDSlib/SDDS_ascii.c
 	SDDSlib/SDDS_binary.c
 	SDDSlib/SDDS_copy.c
@@ -117,8 +117,10 @@ ADD_LIBRARY(
 	mdblib/bomb.c
 	mdblib/cp_str.c
 	mdblib/data_scan.c
+	mdblib/delete_chars.c
 	mdblib/fexists.c
 	mdblib/fopen_e.c
+	mdblib/get_token_tq.c
 	mdblib/match_string.c
 	mdblib/searchPath.c
 	mdblib/str_copy.c
@@ -130,25 +132,14 @@ ADD_LIBRARY(
 TARGET_LINK_LIBRARIES(
 	SDDSlib
 	lzma
-	)
-
-ADD_LIBRARY(
-	SDDS3lib
-	STATIC
-	SDDS3lib/SDDSArray.cc
-	SDDS3lib/SDDSColumn.cc
-	SDDS3lib/SDDSFile.cc
-	SDDS3lib/SDDSParameter.cc
-	SDDS3lib/SDDSUtil.cc
-	)
-
-TARGET_LINK_LIBRARIES(
-	SDDS3lib
-	SDDSlib
 	${ZLIB_LIBRARIES}
 	)
 
-SET_TARGET_PROPERTIES(SDDS3lib PROPERTIES COMPILE_FLAGS "-fPIC")
+SET(
+	SDDS_INCLUDE_DIR
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}/lzma
+	PARENT_SCOPE
+	)
 
-SET(SDDS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
-SET(SDDS3_LIBRARIES SDDS3lib PARENT_SCOPE)
+SET(SDDS_LIBRARIES SDDSlib PARENT_SCOPE)
